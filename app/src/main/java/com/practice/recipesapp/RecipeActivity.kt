@@ -2,11 +2,11 @@ package com.practice.recipesapp
 
 import android.graphics.Color
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.practice.recipesapp.databinding.ActivityRecipeBinding
 
@@ -21,22 +21,27 @@ class RecipeActivity : AppCompatActivity() {
         binding = ActivityRecipeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Glide.with(this).load(intent.getStringExtra("img")).into(binding.itemImg)
-        binding.tittle.text = intent.getStringExtra("tittle")
-        binding.stepData.text = intent.getStringExtra("des")
+        // Load intent extras
+        val image = intent.getStringExtra("image")
+        val title = intent.getStringExtra("title")
+        val description = intent.getStringExtra("description")
+        val ingredientsRaw = intent.getStringExtra("ingredients")
 
-        var ing = intent.getStringExtra("ing")?.split("\n".toRegex())?.dropLastWhile { it.isEmpty() }
-            ?.toTypedArray()
-        binding.time.text = ing?.get(0)
+        Glide.with(this).load(image).into(binding.itemImg)
+        binding.tittle.text = title
+        binding.stepData.text = description
 
-        for (i in 1 until ing!!.size) {
-            binding.ingData.text =
-                """${binding.ingData.text} 🟢 ${ing[i]}
-                    
-                """.trimIndent()
+        val ingredients = ingredientsRaw?.split("\n")?.filter { it.isNotBlank() }?.toTypedArray()
+        binding.time.text = ingredients?.firstOrNull() ?: ""
+
+        // Show ingredients
+        for (i in 1 until (ingredients?.size ?: 0)) {
+            binding.ingData.text = """${binding.ingData.text} 🟢 ${ingredients!![i]}
+
+            """.trimIndent()
         }
-        binding.step.background = null
-        binding.step.setTextColor(getColor(R.color.black))
+
+        // Setup tab switching
         binding.step.setOnClickListener {
             binding.step.setBackgroundResource(R.drawable.btn_ing)
             binding.step.setTextColor(getColor(R.color.white))
@@ -55,25 +60,25 @@ class RecipeActivity : AppCompatActivity() {
             binding.stepScroll.visibility = View.GONE
         }
 
+        // Fullscreen image toggle
         binding.fullScreen.setOnClickListener {
             if (imgCrop) {
                 binding.itemImg.scaleType = ImageView.ScaleType.FIT_CENTER
-                Glide.with(this).load(intent.getStringExtra("img")).into(binding.itemImg)
+                Glide.with(this).load(image).into(binding.itemImg)
                 binding.fullScreen.setColorFilter(Color.BLACK)
                 binding.shade.visibility = View.GONE
-                imgCrop = !imgCrop
             } else {
                 binding.itemImg.scaleType = ImageView.ScaleType.CENTER_CROP
-                Glide.with(this).load(intent.getStringExtra("img")).into(binding.itemImg)
+                Glide.with(this).load(image).into(binding.itemImg)
                 binding.fullScreen.setColorFilter(null)
                 binding.shade.visibility = View.VISIBLE
-                imgCrop = !imgCrop
             }
+            imgCrop = !imgCrop
         }
 
+        // Back button
         binding.backBtn.setOnClickListener {
             finish()
         }
-
     }
 }

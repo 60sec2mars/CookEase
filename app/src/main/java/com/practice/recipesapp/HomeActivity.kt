@@ -1,10 +1,13 @@
 package com.practice.recipesapp
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.room.Room
+import com.google.firebase.auth.FirebaseAuth
 import com.practice.recipesapp.databinding.ActivityHomeBinding
 
 class HomeActivity : AppCompatActivity() {
@@ -25,53 +28,85 @@ class HomeActivity : AppCompatActivity() {
         }
 
         binding.salad.setOnClickListener {
-            var intent = Intent(this@HomeActivity, CategoryActivity::class.java)
+            val intent = Intent(this, CategoryActivity::class.java)
             intent.putExtra("TITTLE", "Salad")
             intent.putExtra("CATEGORY", "Salad")
             startActivity(intent)
         }
+
         binding.mainDish.setOnClickListener {
-            var intent = Intent(this@HomeActivity, CategoryActivity::class.java)
+            val intent = Intent(this, CategoryActivity::class.java)
             intent.putExtra("TITTLE", "Main Dish")
             intent.putExtra("CATEGORY", "Dish")
             startActivity(intent)
         }
+
         binding.drinks.setOnClickListener {
-            var intent = Intent(this@HomeActivity, CategoryActivity::class.java)
+            val intent = Intent(this, CategoryActivity::class.java)
             intent.putExtra("TITTLE", "Drinks")
             intent.putExtra("CATEGORY", "Drinks")
             startActivity(intent)
         }
+
         binding.desserts.setOnClickListener {
-            var intent = Intent(this@HomeActivity, CategoryActivity::class.java)
+            val intent = Intent(this, CategoryActivity::class.java)
             intent.putExtra("TITTLE", "Desserts")
             intent.putExtra("CATEGORY", "Desserts")
             startActivity(intent)
         }
 
+        binding.btnScanIngredients.setOnClickListener {
+            startActivity(Intent(this, ScanIngredientsActivity::class.java))
+        }
+
+        binding.btnMenu.setOnClickListener { view ->
+            val popup = PopupMenu(this, view)
+            popup.menuInflater.inflate(R.menu.menu_home, popup.menu)
+
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.menu_settings -> {
+                        startActivity(Intent(this, SettingsActivity::class.java))
+                        true
+                    }
+                    R.id.menu_profile -> {
+                        Toast.makeText(this, "Profile clicked", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    R.id.menu_logout -> {
+                        FirebaseAuth.getInstance().signOut()
+                        startActivity(Intent(this, LoginActivity::class.java))
+                        finish()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
     }
 
     private fun setupRecyclerView() {
-
         dataList = ArrayList()
         binding.rvPopular.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-        var db = Room.databaseBuilder(this@HomeActivity, AppDatabase::class.java, "db_name")
+        val db = Room.databaseBuilder(this, AppDatabase::class.java, "db_name")
             .allowMainThreadQueries()
             .fallbackToDestructiveMigration()
             .createFromAsset("recipe.db")
             .build()
 
-        var daoObject = db.getDao()
-        var recipes = daoObject.getAll()
+        val daoObject = db.getDao()
+        val recipes = daoObject.getAll()
 
-        for (i in recipes!!.indices) {
-            if (recipes[i]!!.category.contains("Popular")) {
-                dataList.add(recipes[i]!!)
+        for (recipe in recipes!!) {
+            if (recipe!!.category.contains("Popular")) {
+                dataList.add(recipe)
             }
-            rvAdapter = PopularAdapter(dataList, this)
-            binding.rvPopular.adapter = rvAdapter
         }
+
+        rvAdapter = PopularAdapter(dataList, this)
+        binding.rvPopular.adapter = rvAdapter
     }
 }

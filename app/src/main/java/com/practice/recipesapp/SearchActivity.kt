@@ -58,7 +58,7 @@ class SearchActivity : AppCompatActivity() {
     private fun filterData(filterText: String) {
         var filterData = ArrayList<Recipe>()
         for (i in recipes.indices) {
-            if (recipes[i]!!.tittle.lowercase().contains(filterText.lowercase())) {
+            if (recipes[i]!!.title.lowercase().contains(filterText.lowercase())) {
                 filterData.add(recipes[i]!!)
             }
             rvAdapter.filerList(filterList = filterData)
